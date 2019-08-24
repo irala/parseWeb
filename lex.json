@@ -1,0 +1,9 @@
+{
+    "title":"h1",
+    "tags_to_map":[
+        "div",
+        "li",
+        "ul"
+    ],
+    "chars_to_ignore":"<>/"
+}
