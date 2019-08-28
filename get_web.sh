@@ -3,3 +3,4 @@
 
 #usage ./get_web.sh https://www.noticias3d.com
 curl $1 > html
+elinks -dump html > html.txt
