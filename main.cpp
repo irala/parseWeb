@@ -64,41 +64,56 @@ void line_to_words_statistics(
     const int current_line,
     map<string, tuple<int, set<int>>> &map_word_statistics)
 {
+
+  
 }
 
 //calculate statistics for the words of lexer.tags_to_map
 int main()
 {
   test_line_to_words();
-  // std::ifstream i("lex.json");
-  // json jlex;
+  std::ifstream i("lex.json");
+  json jlex;
   // i >> jlex;
   // //C++17 structured bindings
-  // // for (const auto &[k, v] : jlex.items())
-  // // {
-  // //   cout << k << " : " << v.dump(4) << endl;
-  // // }
+  //  for (const auto &[k, v] : jlex.items())
+  //  {
+  //    cout << k << " : " << v.dump(4) << endl;
+  //  }
 
-  // const auto &match = jlex.find("tags_to_map");
+  const auto &match = jlex.find("tags_to_map");
+  const auto &ignore_match = jlex.find("chars_to_ignore");
+  set<string> tags;
+  set<char> ignore_chars;
+  if (match != jlex.end())
+  {
+    //hay cosas
+    tags = match.value().get<set<string>>();
+  }
 
-  // set<string> tags;
-  // if (match != jlex.end())
-  // {
-  //   //hay cosas
-  //   tags = match.value().get<set<string>>();
-  // }
+  if (ignore_match != jlex.end())
+  {
+    //hay cosas
+    ignore_chars = ignore_match.value().get<set<char>>();
+  }
 
-  // //dictionary k: tag v: tuple <repetitions,lines_present>
-  // map<string, tuple<int, set<int>>> map_word_statistics;
+  //dictionary k: tag v: tuple <repetitions,lines_present>
+  map<string, tuple<int, set<int>>> map_word_statistics;
 
-  // std::ifstream ifs("html", std::ifstream::in);
-  // vector<string> lines;
-  // string str;
-  // while (getline(ifs, str))
-  // {
-  //   lines.push_back(str);
-  // }
-  // ifs.close();
+  std::ifstream ifs("html", std::ifstream::in);
+  vector<string> lines;
+  string str;
+  while (getline(ifs, str))
+  {
+    lines.push_back(str);
+  }
+  ifs.close();
+
+  for (size_t i = 0; i < lines.size(); i++)
+  {
+    /* code */
+    line_to_words_statistics(lines[i], ' ', tags, ignore_chars, i, map_word_statistics);
+  }
 
   return 0;
 }
