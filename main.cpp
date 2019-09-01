@@ -15,7 +15,7 @@ vector<string> determine_word(const string &line_to_words, const char word_separ
   vector<string> non_exclude_words;
   for (char i : line_to_words)
   {
-    if (i == word_separator)
+    if (i == word_separator || exclude_chars.find(i) != exclude_chars.end())
     {
       if (current_word.str().size() >= 1)
       {
@@ -64,17 +64,27 @@ void line_to_words_statistics(
     const int current_line,
     map<string, tuple<int, set<int>>> &map_word_statistics)
 {
-
-  
+  auto result = determine_word(line_to_words, word_separator, excluded_chars);
+  for (string current_word : result)
+  {
+    if (tags_to_save.find(current_word) != tags_to_save.end())
+    {
+      //current_word is any of the tags_to_save
+      auto &[repetitions, lines] = map_word_statistics[current_word];
+      repetitions++;
+      lines.insert(current_line);
+      map_word_statistics[current_word] = make_tuple(repetitions, lines);
+    }
+  }
 }
 
 //calculate statistics for the words of lexer.tags_to_map
 int main()
 {
-  test_line_to_words();
+  //test_line_to_words();
   std::ifstream i("lex.json");
   json jlex;
-  // i >> jlex;
+  i >> jlex;
   // //C++17 structured bindings
   //  for (const auto &[k, v] : jlex.items())
   //  {
@@ -94,7 +104,10 @@ int main()
   if (ignore_match != jlex.end())
   {
     //hay cosas
-    ignore_chars = ignore_match.value().get<set<char>>();
+    string ignore_chars_ = ignore_match.value().get<string>();
+    for_each(ignore_chars_.begin(), ignore_chars_.end(),[&ignore_chars](char c){
+      ignore_chars.insert(c);
+    } );
   }
 
   //dictionary k: tag v: tuple <repetitions,lines_present>
@@ -113,6 +126,17 @@ int main()
   {
     /* code */
     line_to_words_statistics(lines[i], ' ', tags, ignore_chars, i, map_word_statistics);
+  }
+  for (auto &[k, v] : map_word_statistics)
+  {
+    cout << k << " -> ";
+    auto &[repetitions, lines] = v;
+    stringstream s_lines;
+    for (auto &&i : lines)
+    {
+      s_lines << ' ' << i;
+    }
+    cout << repetitions << " : " << s_lines.str() << endl << endl ;
   }
 
   return 0;
