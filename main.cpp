@@ -141,3 +141,4 @@ int main()
 
   return 0;
 }
+// read by commands tag , repetitions, lines or both.
