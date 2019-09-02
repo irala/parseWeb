@@ -8,6 +8,12 @@
 using json = nlohmann::json;
 using namespace std;
 
+using tag_from_json_t = string;
+using repetitions_t = int;
+using lines_t = set<int>;
+using collection_t = tuple<repetitions_t, lines_t>;
+using map_tag_tuple_repetitions_lines_present_t = map<tag_from_json_t, collection_t>;
+
 vector<string> determine_word(const string &line_to_words, const char word_separator, const set<char> &exclude_chars)
 {
   bool exclude_char = false;
@@ -62,7 +68,7 @@ void line_to_words_statistics(
     const set<string> &tags_to_save,
     const set<char> &excluded_chars,
     const int current_line,
-    map<string, tuple<int, set<int>>> &map_word_statistics)
+    map_tag_tuple_repetitions_lines_present_t &map_word_statistics)
 {
   auto result = determine_word(line_to_words, word_separator, excluded_chars);
   for (string current_word : result)
@@ -78,9 +84,27 @@ void line_to_words_statistics(
   }
 }
 
-//calculate statistics for the words of lexer.tags_to_map
-int main()
+vector<string> parse_commands(int argc, char *argv[])
 {
+  vector<string> commands;
+  for (size_t i = 1; i < static_cast<size_t>(argc); i++)
+  {
+    /* code */
+    commands.push_back(string(argv[i]));
+  }
+  return commands;
+}
+
+//calculate statistics for the words of lexer.tags_to_map
+int main(int argc, char *argv[])
+{
+
+  vector<string> commands = parse_commands(argc, argv);
+  for (auto &&i : commands)
+  {
+    cout << i << endl;
+  }
+
   //test_line_to_words();
   std::ifstream i("lex.json");
   json jlex;
@@ -105,13 +129,13 @@ int main()
   {
     //hay cosas
     string ignore_chars_ = ignore_match.value().get<string>();
-    for_each(ignore_chars_.begin(), ignore_chars_.end(),[&ignore_chars](char c){
+    for_each(ignore_chars_.begin(), ignore_chars_.end(), [&ignore_chars](char c) {
       ignore_chars.insert(c);
-    } );
+    });
   }
 
   //dictionary k: tag v: tuple <repetitions,lines_present>
-  map<string, tuple<int, set<int>>> map_word_statistics;
+  map_tag_tuple_repetitions_lines_present_t map_word_statistics;
 
   std::ifstream ifs("html", std::ifstream::in);
   vector<string> lines;
@@ -127,17 +151,48 @@ int main()
     /* code */
     line_to_words_statistics(lines[i], ' ', tags, ignore_chars, i, map_word_statistics);
   }
-  for (auto &[k, v] : map_word_statistics)
+  const auto &_match = map_word_statistics.find(commands[0]);
+  if (_match == map_word_statistics.cend())
   {
-    cout << k << " -> ";
-    auto &[repetitions, lines] = v;
-    stringstream s_lines;
-    for (auto &&i : lines)
-    {
-      s_lines << ' ' << i;
-    }
-    cout << repetitions << " : " << s_lines.str() << endl << endl ;
+    cout << commands[0] << " not exists in tags" << endl;
+    return 1;
   }
+
+  string _tag = _match->first;
+  auto &[repetitions_, lines_] = _match->second;
+  
+  for (auto &&i : commands)
+  {
+    if (i == "repetitions")
+    {
+      cout <<_tag <<" : "<<repetitions_<<endl;
+    }
+    else if (i == "lines")
+    {
+      cout <<_tag <<" : ";
+      for (auto &&line : lines_)
+      {
+        cout<<"-" <<line;
+      }
+      cout<<endl;
+    }
+    else
+    {
+      cout << "You got wrong the stats" << endl;
+    }
+  }
+
+  // for (auto &[k, v] : map_word_statistics)
+  // {
+  //   // cout << k << " -> ";
+  //   auto &[repetitions, lines] = v;
+  //   stringstream s_lines;
+  //   for (auto &&i : lines)
+  //   {
+  //     s_lines << ' ' << i;
+  //   }
+  //   // cout << repetitions << " : " << s_lines.str() << endl << endl ;
+  // }
 
   return 0;
 }
